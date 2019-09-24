@@ -9,4 +9,5 @@ require (
 	github.com/gorilla/mux v1.7.1
 	github.com/pion/webrtc/v2 v2.0.12
 	github.com/sirupsen/logrus v1.4.2
+	gopkg.in/ini.v1 v1.48.0
 )

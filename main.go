@@ -5,11 +5,13 @@ import (
 	"flag"
 	"io/ioutil"
 	"math/rand"
+	"os"
 
 	rtsp "github.com/deepch/sample_rtsp"
 	"github.com/pion/webrtc/v2"
 	"github.com/pion/webrtc/v2/pkg/media"
 	log "github.com/sirupsen/logrus"
+	"gopkg.in/ini.v1"
 )
 
 // 视频宽高
@@ -23,8 +25,8 @@ var videoTrackWebRTC *webrtc.Track
 func main() {
 	var sd, sdInFile, sdOutFile, rtspURL, stunURL, stunUserName, stunPassWorld string
 	flag.StringVar(&sd, "sd", "", "sd 参数传入(优先读取)")
-	flag.StringVar(&sdInFile, "sdInFile", "./sd.txt", "文件读取sd值(参数未传入, 通过文件读取)")
-	flag.StringVar(&sdOutFile, "sdOutFile", "/userdata/app/ispeaker-service/config/response_sdp.txt", "文件输出sd值")
+	flag.StringVar(&sdInFile, "sdInFile", "./request_sdp.txt", "文件读取sd值(参数未传入, 通过文件读取)")
+	flag.StringVar(&sdOutFile, "sdOutFile", "response_sdp.txt", "文件输出sd值")
 	flag.StringVar(&stunURL, "stunURL", "turn:cc.zycoo.com:3478?transport=udp", "stun/turn 地址")
 	flag.StringVar(&stunUserName, "stunUserName", "tqcenglish", "用户名")
 	flag.StringVar(&stunPassWorld, "stunPassWorld", "abcd123?", "密码")
@@ -201,8 +203,14 @@ func getSd(data, stunURL, user, password string) (resSd string) {
 }
 
 func setSd(path, content string) {
-	data := []byte(content)
-	if ioutil.WriteFile(path, data, 0644) == nil {
-		log.Infof("写入 resSd 到文件 %s 成功", path)
+	cfg, err := ini.Load(path)
+	if err != nil {
+		log.Errorf("Fail to read file: %v", err)
+		os.Exit(1)
 	}
+
+	// Now, make some changes and save it
+	cfg.Section("general").Key("sdp").SetValue(content)
+	cfg.SaveTo(path)
+	log.Infof("写入 resSd 到文件 %s 成功", path)
 }
