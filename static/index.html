@@ -1,0 +1,68 @@
+<script src="./jquery.min.js"></script>
+<div id="remoteVideos"></div> <br/>
+
+Browser base64 Session Description <textarea id="localSessionDescription" readonly="true"></textarea> <br />
+Golang base64 Session Description: <textarea id="remoteSessionDescription"> </textarea> <br/>
+
+<button onclick="window.startSession()"> Start Session </button>
+<div id="div"></div>
+<script>
+
+// let pc = new RTCPeerConnection()
+let pc = new RTCPeerConnection({
+  iceServers: [
+    {
+      urls: ["turn:cc.zycoo.com:3478?transport=udp", "turn:cc.zycoo.com:3478?transport=tcp"],
+      username: "tqcenglish",
+      credential: "abcd123"
+    }
+  ]
+})
+let log = msg => {
+  console.log('log', msg);
+  document.getElementById('div').innerHTML += msg + '<br>'
+}
+
+pc.ontrack = function (event) {
+  var el = document.createElement(event.track.kind)
+  el.srcObject = event.streams[0]
+  el.autoplay = true
+  el.controls = true
+
+  document.getElementById('remoteVideos').appendChild(el)
+}
+
+pc.oniceconnectionstatechange = e => log(pc.iceConnectionState);
+
+pc.onicecandidate = event => {
+  // console.log('event.candidate', event.candidate);
+  if (event.candidate === null) {
+    console.log("设置 sdp");
+    console.log(pc.localDescription.sdp);
+    document.getElementById('localSessionDescription').value = btoa(pc.localDescription.sdp)
+    // $.post("/recive", { data:btoa(pc.localDescription.sdp)} ,function(data){
+    //   document.getElementById('remoteSessionDescription').value = data
+    //   window.startSession()
+    // });
+  }
+}
+
+pc.createOffer({iceRestart: false, offerToReceiveVideo: true, offerToReceiveAudio: true}).then(d => {
+  // console.log('createOffer');
+  console.log(d.sdp);
+  pc.setLocalDescription(d);
+}).catch(log)
+
+window.startSession = () => {
+  let sd = document.getElementById('remoteSessionDescription').value
+  if (sd === '') {
+    return alert('Session Description must not be empty')
+  }
+
+  try {
+    pc.setRemoteDescription(new RTCSessionDescription({type: 'answer', sdp: atob(sd)}))
+  } catch (e) {
+    alert(e)
+  }
+}
+</script>
