@@ -41,12 +41,12 @@ func work(rtspURL string) {
 	pps := []byte{}
 	fuBuffer := []byte{}
 	count := 0
-	
+
 	client := ClientNew()
 	client.URL = rtspURL
 	client.Debug = false
 	client.Name = rtspURL
-	
+
 	syncCount := 0
 	preTS := 0
 	writeNALU := func(sync bool, ts int, payload []byte) {
@@ -54,6 +54,7 @@ func work(rtspURL string) {
 		// 	DataChanelTest <- webrtc.RTCSample{Data: payload, Samples: uint32(ts - preTS)}
 		// }
 		if videoTrackWebRTC != nil && preTS != 0 {
+			log.Debug("videoTrackWebRTC")
 			videoTrackWebRTC.WriteSample(media.Sample{Data: payload, Samples: uint32(ts - preTS)})
 		}
 		preTS = ts
