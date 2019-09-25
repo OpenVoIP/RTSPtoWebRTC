@@ -28,10 +28,6 @@ var videoTrackWebRTC *webrtc.Track
 
 //StartRTSPServer 开启 RTSP 服务
 func StartRTSPServer(rtspURL string, sdpOutFile string, remoteSdp string, stun *StunConfig) {
-	client := ClientNew()
-	client.URL = rtspURL
-	client.Debug = false
-	client.Name = rtspURL
 
 	localSdp := getSdp(remoteSdp, stun)
 	setSdp(sdpOutFile, localSdp)
@@ -45,8 +41,12 @@ func work(rtspURL string) {
 	pps := []byte{}
 	fuBuffer := []byte{}
 	count := 0
-	Client := ClientNew()
-	Client.Debug = false
+	
+	client := ClientNew()
+	client.URL = rtspURL
+	client.Debug = false
+	client.Name = rtspURL
+	
 	syncCount := 0
 	preTS := 0
 	writeNALU := func(sync bool, ts int, payload []byte) {
@@ -81,15 +81,15 @@ func work(rtspURL string) {
 		}
 	}
 
-	if err := Client.Open(); err != nil {
+	if err := client.Open(); err != nil {
 		log.Error("[RTSP] Error", err)
 	} else {
 		for {
 			select {
-			case <-Client.Signals:
+			case <-client.Signals:
 				log.Error("Exit signals by rtsp")
 				return
-			case data := <-Client.Outgoing:
+			case data := <-client.Outgoing:
 				count += len(data)
 
 				// log.Error("recive  rtp packet size", len(data), "recive all packet size", count)
@@ -129,7 +129,7 @@ func work(rtspURL string) {
 			}
 		}
 	}
-	Client.Close()
+	client.Close()
 }
 
 func getSdp(remoteSdp string, stun *StunConfig) (local string) {
