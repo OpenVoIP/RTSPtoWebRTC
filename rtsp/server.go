@@ -54,7 +54,7 @@ func work(rtspURL string) {
 		// 	DataChanelTest <- webrtc.RTCSample{Data: payload, Samples: uint32(ts - preTS)}
 		// }
 		if videoTrackWebRTC != nil && preTS != 0 {
-			log.Debug("videoTrackWebRTC")
+			// log.Debug("videoTrackWebRTC")
 			videoTrackWebRTC.WriteSample(media.Sample{Data: payload, Samples: uint32(ts - preTS)})
 		}
 		preTS = ts
@@ -134,7 +134,7 @@ func work(rtspURL string) {
 }
 
 func getSdp(remoteSdp string, stun *StunConfig) (local string) {
-	sd, err := base64.StdEncoding.DecodeString(remoteSdp)
+	sdp, err := base64.StdEncoding.DecodeString(remoteSdp)
 	if err != nil {
 		log.Println(err)
 		return
@@ -149,6 +149,7 @@ func getSdp(remoteSdp string, stun *StunConfig) (local string) {
 				CredentialType: webrtc.ICECredentialTypePassword,
 			},
 		},
+		// ICETransportPolicy: webrtc.ICETransportPolicyRelay,
 	})
 	if err != nil {
 		panic(err)
@@ -166,10 +167,11 @@ func getSdp(remoteSdp string, stun *StunConfig) (local string) {
 		log.Println(err)
 		return
 	}
-	// fmt.Print(string(sd))
+	// fmt.Print(string(sdp))
+	log.Debugf("offer sdp\n%+v", string(sdp))
 	offer := webrtc.SessionDescription{
 		Type: webrtc.SDPTypeOffer,
-		SDP:  string(sd),
+		SDP:  string(sdp),
 	}
 	if err := peerConnection.SetRemoteDescription(offer); err != nil {
 		log.Println(err)
@@ -177,7 +179,7 @@ func getSdp(remoteSdp string, stun *StunConfig) (local string) {
 	}
 	answer, err := peerConnection.CreateAnswer(nil)
 
-	log.Debugf("answer sdp \n %+v", answer.SDP)
+	log.Debugf("answer sdp\n%+v", answer.SDP)
 
 	if err != nil {
 		log.Println(err)

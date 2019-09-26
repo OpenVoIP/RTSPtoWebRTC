@@ -159,14 +159,15 @@ func (client *Client) Read() (buffer []byte, err error) {
 		log.Error(err)
 		return nil, err
 	}
-	if n, err := client.socket.Read(buffer); err != nil || n <= 2 {
+
+	var n int
+	if n, err = client.socket.Read(buffer); err != nil || n <= 2 {
 		return nil, err
-	} else {
-		if client.Debug {
-			log.Println(string(buffer[:n]))
-		}
-		return buffer[:n], nil
 	}
+	if client.Debug {
+		log.Println(string(buffer[:n]))
+	}
+	return buffer[:n], nil
 }
 
 //ParseURL parse urls
