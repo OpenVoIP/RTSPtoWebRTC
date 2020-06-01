@@ -11,14 +11,14 @@ Golang base64 Session Description: <textarea id="remoteSessionDescription"> </te
 
 // let pc = new RTCPeerConnection()
 let pc = new RTCPeerConnection({
-  iceServers: [
-    {
-      urls: 'turn:cc.zycoo.com:3478',
-      username: 'tqcenglish',
-      credential: 'abcd123',
-      
-    }
-  ]
+  // iceServers: [
+  //   {
+  //     urls: 'turn:cc.zycoo.com:3478',
+  //     username: 'tqcenglish',
+  //     credential: 'abcd123',
+  //   }
+  // ],
+  // iceTransportPolicy:"relay",
 })
 let log = msg => {
   document.getElementById('div').innerHTML += msg + '<br>'

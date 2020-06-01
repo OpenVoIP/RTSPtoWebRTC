@@ -149,7 +149,7 @@ func getSdp(remoteSdp string, stun *StunConfig) (local string) {
 				CredentialType: webrtc.ICECredentialTypePassword,
 			},
 		},
-		// ICETransportPolicy: webrtc.ICETransportPolicyRelay,
+		ICETransportPolicy: webrtc.ICETransportPolicyRelay,
 	})
 	if err != nil {
 		panic(err)
@@ -157,24 +157,24 @@ func getSdp(remoteSdp string, stun *StunConfig) (local string) {
 	peerConnection.OnICEConnectionStateChange(func(connectionState webrtc.ICEConnectionState) {
 		log.Infof("Connection State has changed %s \n", connectionState.String())
 	})
-	vp8Track, err := peerConnection.NewTrack(webrtc.DefaultPayloadTypeH264, rand.Uint32(), "video", "pion2")
+	videoTrackWebRTC, err = peerConnection.NewTrack(webrtc.DefaultPayloadTypeH264, rand.Uint32(), "video", "pion2")
 	if err != nil {
-		log.Println(err)
+		log.Error(err)
 		return
 	}
-	_, err = peerConnection.AddTrack(vp8Track)
+	_, err = peerConnection.AddTrack(videoTrackWebRTC)
 	if err != nil {
-		log.Println(err)
+		log.Error(err)
 		return
 	}
-	// fmt.Print(string(sdp))
 	log.Debugf("offer sdp\n%+v", string(sdp))
+
 	offer := webrtc.SessionDescription{
 		Type: webrtc.SDPTypeOffer,
 		SDP:  string(sdp),
 	}
 	if err := peerConnection.SetRemoteDescription(offer); err != nil {
-		log.Println(err)
+		log.Error(err)
 		return
 	}
 	answer, err := peerConnection.CreateAnswer(nil)
@@ -182,12 +182,9 @@ func getSdp(remoteSdp string, stun *StunConfig) (local string) {
 	log.Debugf("answer sdp\n%+v", answer.SDP)
 
 	if err != nil {
-		log.Println(err)
+		log.Error(err)
 		return
 	}
-	// 写回文件
-	// DataChanelTest = vp8Track.Samples
-	videoTrackWebRTC = vp8Track
 	return base64.StdEncoding.EncodeToString([]byte(answer.SDP))
 }
 
